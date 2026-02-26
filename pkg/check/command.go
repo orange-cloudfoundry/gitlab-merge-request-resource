@@ -18,7 +18,7 @@ func NewCommand(client *gitlab.Client) *Command {
 }
 
 func (command *Command) Run(request Request) (Response, error) {
-	labels := gitlab.Labels(request.Source.Labels)
+	labels := gitlab.LabelOptions(request.Source.Labels)
 
 	// https://docs.gitlab.com/ee/api/pipelines.html#list-project-pipelines
 	sort, err := request.Source.GetSort()
@@ -47,7 +47,7 @@ func (command *Command) Run(request Request) (Response, error) {
 			continue
 		}
 
-		commit, _, err := command.client.Commits.GetCommit(mr.ProjectID, mr.SHA)
+		commit, _, err := command.client.Commits.GetCommit(mr.ProjectID, mr.SHA, nil)
 		if err != nil {
 			return Response{}, err
 		}
@@ -118,7 +118,7 @@ func matchPathPatterns(api *gitlab.Client, mr *gitlab.MergeRequest, source pkg.S
 	if len(versions) > 0 {
 
 		latest := versions[0].ID
-		version, _, err := api.MergeRequests.GetSingleMergeRequestDiffVersion(mr.ProjectID, mr.IID, latest)
+		version, _, err := api.MergeRequests.GetSingleMergeRequestDiffVersion(mr.ProjectID, mr.IID, latest, nil)
 		if err != nil {
 			return false, err
 		}

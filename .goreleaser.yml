@@ -1,4 +1,6 @@
 ---
+version: 2
+
 project_name: gitlab-merge-request-resource
 
 before:
@@ -25,13 +27,12 @@ builds:
 
 archives:
   - id: archives
-    builds: [check, in, out]
-    format: "tar.gz"
+    ids: [check, in, out]
+    formats: ["tar.gz"]
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
     wrap_in_directory: true
     files:
       - README*
-      - assets/*
 
 changelog:
   sort: asc
@@ -48,6 +49,10 @@ checksum:
 dockers:
   - goos: linux
     goarch: amd64
+    ids:
+      - check
+      - in
+      - out
     image_templates:
       - "{{ .Env.DOCKER_TARGET }}:latest"
       - "{{ .Env.DOCKER_TARGET }}:v{{ .Major }}"
@@ -61,6 +66,8 @@ dockers:
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.source={{ .GitURL }}"
       - "--platform=linux/amd64"
+    extra_files:
+      - README.md
 
 release:
   prerelease: auto
