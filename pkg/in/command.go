@@ -61,7 +61,7 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 		return Response{}, err
 	}
 
-	commit, _, err := command.client.Commits.GetCommit(mr.SourceProjectID, mr.SHA)
+	commit, _, err := command.client.Commits.GetCommit(mr.SourceProjectID, mr.SHA, nil)
 	if err != nil {
 		return Response{}, err
 	}

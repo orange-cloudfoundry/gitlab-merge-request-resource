@@ -93,7 +93,8 @@ func (command *Command) updateLabels(request Request, mr gitlab.MergeRequest) er
 		}
 
 		labels := append(mr.Labels, request.Params.Labels...)
-		options := gitlab.UpdateMergeRequestOptions{Labels: &labels}
+		labelOptions := gitlab.LabelOptions(labels)
+		options := gitlab.UpdateMergeRequestOptions{Labels: &labelOptions}
 
 		result, _, err := command.client.MergeRequests.UpdateMergeRequest(mr.SourceProjectID, mr.IID, &options)
 		if err != nil {
