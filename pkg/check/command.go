@@ -1,10 +1,11 @@
 package check
 
 import (
-	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
-	"github.com/xanzy/go-gitlab"
 	"strings"
 	"time"
+
+	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 type Command struct {
@@ -63,7 +64,7 @@ func (command *Command) Run(request Request) (Response, error) {
 			updatedAt = getMostRecentUpdateTime(notes, updatedAt)
 		}
 
-		if request.Source.SkipNotMergeable && mr.MergeStatus != "can_be_merged" {
+		if request.Source.SkipNotMergeable && mr.DetailedMergeStatus != "mergeable" {
 			continue
 		}
 

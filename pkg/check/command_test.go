@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg/check"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -17,14 +17,16 @@ import (
 var _ = Describe("Check", func() {
 
 	var (
-		t       time.Time
-		mux     *http.ServeMux
-		command *check.Command
-		root    *url.URL
+		t                   time.Time
+		mux                 *http.ServeMux
+		command             *check.Command
+		root                *url.URL
+		detailedMergeStatus string
 	)
 
 	BeforeEach(func() {
 		t, _ = time.Parse(time.RFC3339, "2022-01-01T08:00:00Z")
+		detailedMergeStatus = "mergeable"
 		mux = http.NewServeMux()
 		server := httptest.NewServer(mux)
 		root, _ = url.Parse(server.URL)
@@ -48,7 +50,11 @@ var _ = Describe("Check", func() {
 			BeforeEach(func() {
 				mux.HandleFunc("/api/v4/projects/namespace%2Fproject/merge_requests", func(w http.ResponseWriter, r *http.Request) {
 					defer GinkgoRecover()
-					mr := gitlab.MergeRequest{IID: 88, ID: 99, SHA: "abc", ProjectID: 42}
+					Expect(r.Method).To(Equal(http.MethodGet))
+					Expect(r.URL.EscapedPath()).To(Equal("/api/v4/projects/namespace%2Fproject/merge_requests"))
+					Expect(r.Header.Get("Private-Token")).To(Equal("$"))
+					Expect(r.URL.Query().Get("state")).To(Equal("opened"))
+					mr := gitlab.MergeRequest{IID: 88, ID: 99, SHA: "abc", ProjectID: 42, DetailedMergeStatus: detailedMergeStatus}
 					output, _ := json.Marshal([]gitlab.MergeRequest{mr})
 					w.Header().Set("content-type", "application/json")
 					w.WriteHeader(http.StatusOK)
@@ -84,6 +90,37 @@ var _ = Describe("Check", func() {
 				Expect(len(response)).To(Equal(1))
 				Expect(response[0].ID).To(Equal(88))
 				Expect(response[0].UpdatedAt).To(Equal(&t))
+			})
+
+			It("filters merge requests according to their merge status", func() {
+				project, _ := url.Parse("namespace/project.git")
+				uri := root.ResolveReference(project)
+				request := check.Request{
+					Source: pkg.Source{
+						URI:              uri.String(),
+						PrivateToken:     "$",
+						SkipNotMergeable: true,
+					},
+				}
+
+				response, err := command.Run(request)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(response).To(HaveLen(1))
+
+				detailedMergeStatus = "conflict"
+				response, err = command.Run(request)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(response).To(BeEmpty())
+
+				detailedMergeStatus = "checking"
+				response, err = command.Run(request)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(response).To(BeEmpty())
+
+				request.Source.SkipNotMergeable = false
+				response, err = command.Run(request)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(response).To(HaveLen(1))
 			})
 
 		})

@@ -3,7 +3,7 @@ package in
 import (
 	"encoding/json"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"net/url"
 	"os"
 	"strconv"

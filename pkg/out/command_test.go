@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg/out"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"io"
 	"net/http"
 	"net/http/httptest"
