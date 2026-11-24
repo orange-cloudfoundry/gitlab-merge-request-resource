@@ -46,20 +46,24 @@ var _ = Describe("Check", func() {
 		Context("When it has a minimal valid configuration", func() {
 
 			BeforeEach(func() {
-				mux.HandleFunc("/api/v4/projects/namespace/project/merge_requests", func(w http.ResponseWriter, r *http.Request) {
+				mux.HandleFunc("/api/v4/projects/namespace%2Fproject/merge_requests", func(w http.ResponseWriter, r *http.Request) {
+					defer GinkgoRecover()
 					mr := gitlab.MergeRequest{IID: 88, ID: 99, SHA: "abc", ProjectID: 42}
 					output, _ := json.Marshal([]gitlab.MergeRequest{mr})
 					w.Header().Set("content-type", "application/json")
 					w.WriteHeader(http.StatusOK)
-					w.Write(output)
+					_, err := w.Write(output)
+					Expect(err).NotTo(HaveOccurred())
 				})
 
 				mux.HandleFunc("/api/v4/projects/42/repository/commits/abc", func(w http.ResponseWriter, r *http.Request) {
+					defer GinkgoRecover()
 					commit := gitlab.Commit{CommittedDate: &t}
 					output, _ := json.Marshal(commit)
 					w.Header().Set("content-type", "application/json")
 					w.WriteHeader(http.StatusOK)
-					w.Write(output)
+					_, err := w.Write(output)
+					Expect(err).NotTo(HaveOccurred())
 				})
 			})
 
@@ -87,7 +91,7 @@ var _ = Describe("Check", func() {
 		Context("When it contains an invalid project uri", func() {
 
 			BeforeEach(func() {
-				mux.HandleFunc("/api/v4/projects/namespace/project/merge_requests", http.NotFound)
+				mux.HandleFunc("/api/v4/projects/invalid%2Fproject/merge_requests", http.NotFound)
 			})
 
 			It("Should error when project uri is invalid", func() {

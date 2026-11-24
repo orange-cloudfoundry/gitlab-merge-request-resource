@@ -27,12 +27,12 @@ func (command *Command) Run(request Request) (Response, error) {
 	}
 
 	options := &gitlab.ListProjectMergeRequestsOptions{
-		State:        gitlab.String("opened"),
-		OrderBy:      gitlab.String("updated_at"),
-		Sort:         gitlab.String(sort),
+		State:        gitlab.Ptr("opened"),
+		OrderBy:      gitlab.Ptr("updated_at"),
+		Sort:         gitlab.Ptr(sort),
 		Labels:       &labels,
-		TargetBranch: gitlab.String(request.Source.TargetBranch),
-		SourceBranch: gitlab.String(request.Source.SourceBranch),
+		TargetBranch: gitlab.Ptr(request.Source.TargetBranch),
+		SourceBranch: gitlab.Ptr(request.Source.SourceBranch),
 	}
 
 	requests, _, err := command.client.MergeRequests.ListProjectMergeRequests(request.Source.GetProjectPath(), options)

@@ -27,6 +27,7 @@ var _ = Describe("In", func() {
 		command     *in.Command
 		root        *url.URL
 		destination string
+		userStatus  int
 	)
 
 	BeforeEach(func() {
@@ -39,18 +40,20 @@ var _ = Describe("In", func() {
 		base := root.ResolveReference(context)
 		client, _ := gitlab.NewClient("$", gitlab.WithBaseURL(base.String()))
 		command = in.NewCommand(client).WithRunner(newMockRunner(destination))
+		userStatus = http.StatusOK
 
 	})
 
 	AfterEach(func() {
-		defer os.Remove(destination)
 		server.Close()
+		Expect(os.RemoveAll(destination)).To(Succeed())
 	})
 
 	Describe("Run", func() {
 
 		BeforeEach(func() {
-			mux.HandleFunc("/api/v4/projects/namespace/project/merge_requests/1", func(w http.ResponseWriter, r *http.Request) {
+			mux.HandleFunc("/api/v4/projects/namespace%2Fproject/merge_requests/1", func(w http.ResponseWriter, r *http.Request) {
+				defer GinkgoRecover()
 				mr := gitlab.MergeRequest{
 					IID:             88,
 					ID:              99,
@@ -65,25 +68,35 @@ var _ = Describe("In", func() {
 				output, _ := json.Marshal(mr)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write(output)
+				_, err := w.Write(output)
+				Expect(err).NotTo(HaveOccurred())
 			})
 			mux.HandleFunc("/api/v4/projects/42", func(w http.ResponseWriter, r *http.Request) {
+				defer GinkgoRecover()
 				project, _ := url.Parse("namespace/project.git")
 				uri := root.ResolveReference(project)
 				mr := gitlab.Project{HTTPURLToRepo: uri.String()}
 				output, _ := json.Marshal(mr)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write(output)
+				_, err := w.Write(output)
+				Expect(err).NotTo(HaveOccurred())
 			})
 			mux.HandleFunc("/api/v4/projects/42/repository/commits/abc", func(w http.ResponseWriter, r *http.Request) {
+				defer GinkgoRecover()
 				commit := gitlab.Commit{CommittedDate: &t}
 				output, _ := json.Marshal(commit)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write(output)
+				_, err := w.Write(output)
+				Expect(err).NotTo(HaveOccurred())
 			})
 			mux.HandleFunc("/api/v4/user", func(w http.ResponseWriter, r *http.Request) {
+				defer GinkgoRecover()
+				if userStatus != http.StatusOK {
+					http.Error(w, "user lookup failed", userStatus)
+					return
+				}
 				user := gitlab.User{
 					Username: "test",
 					Email:    "test@example.com",
@@ -91,7 +104,8 @@ var _ = Describe("In", func() {
 				output, _ := json.Marshal(user)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write(output)
+				_, err := w.Write(output)
+				Expect(err).NotTo(HaveOccurred())
 			})
 		})
 
@@ -120,12 +134,19 @@ var _ = Describe("In", func() {
 			})
 		})
 
+		It("returns an error when the current user cannot be retrieved", func() {
+			userStatus = http.StatusUnauthorized
+			_, err := command.Run(destination, in.Request{})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("401"))
+		})
+
 	})
 
 })
 
 func newMockRunner(destination string) in.GitRunner {
-	os.MkdirAll(filepath.Join(destination, ".git"), 0755)
+	Expect(os.MkdirAll(filepath.Join(destination, ".git"), 0755)).To(Succeed())
 	return mockRunner{destination}
 }
 

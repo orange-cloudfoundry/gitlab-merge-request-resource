@@ -46,7 +46,7 @@ func (comment Comment) ReadContent(folder string) (string, error) {
 
 	if comment.Text != "" {
 		commentRaw := comment.Text
-		commentContent = strings.Replace(commentRaw, "$FILE_CONTENT", fileContent, -1)
+		commentContent = strings.ReplaceAll(commentRaw, "$FILE_CONTENT", fileContent)
 	}
 
 	return commentContent, nil

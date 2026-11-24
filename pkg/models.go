@@ -50,7 +50,7 @@ func (source *Source) GetBaseURL() string {
 
 // GetProjectPath extracts project path from URI (repository URL).
 func (source *Source) GetProjectPath() string {
-	r, _ := regexp.Compile("(https?|ssh)://([^/]*)/(.*)\\.git$")
+	r, _ := regexp.Compile(`(https?|ssh)://([^/]*)/(.*)\.git$`)
 	return r.FindStringSubmatch(source.URI)[3]
 }
 

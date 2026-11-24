@@ -2,12 +2,13 @@ package out
 
 import (
 	"encoding/json"
-	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
-	"github.com/xanzy/go-gitlab"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
+	"github.com/xanzy/go-gitlab"
 )
 
 type Command struct {
@@ -108,7 +109,7 @@ func (command *Command) updateLabels(request Request, mr gitlab.MergeRequest) er
 
 func (command *Command) updateCommitStatus(request Request, mr gitlab.MergeRequest) error {
 	if request.Params.Status != "" {
-		state := gitlab.BuildState(gitlab.BuildStateValue(request.Params.Status))
+		state := new(gitlab.BuildStateValue(request.Params.Status))
 		target := request.Source.GetTargetURL()
 		name := request.Source.GetPipelineName()
 		options := gitlab.SetCommitStatusOptions{
