@@ -1,9 +1,6 @@
 package pkg
 
-import (
-	"os"
-	"testing"
-)
+import "testing"
 
 func TestSource_GetProjectPath(t *testing.T) {
 	tests := []struct {
@@ -214,10 +211,10 @@ func TestSource_GetTargetURL(t *testing.T) {
 
 	source := Source{}
 
-	os.Setenv("BUILD_TEAM_NAME", "alpha")
-	os.Setenv("BUILD_PIPELINE_NAME", "beta")
-	os.Setenv("BUILD_JOB_NAME", "gamma")
-	os.Setenv("BUILD_NAME", "delta")
+	t.Setenv("BUILD_TEAM_NAME", "alpha")
+	t.Setenv("BUILD_PIPELINE_NAME", "beta")
+	t.Setenv("BUILD_JOB_NAME", "gamma")
+	t.Setenv("BUILD_NAME", "delta")
 
 	want := "/teams/alpha/pipelines/beta/jobs/gamma/builds/delta"
 	got := source.GetTargetURL()
@@ -225,7 +222,7 @@ func TestSource_GetTargetURL(t *testing.T) {
 		t.Errorf("GetTargetURL() = %v, want %v", got, want)
 	}
 
-	os.Setenv("BUILD_PIPELINE_INSTANCE_VARS", `{"file":"foo/bar","extra":"param"}`)
+	t.Setenv("BUILD_PIPELINE_INSTANCE_VARS", `{"file":"foo/bar","extra":"param"}`)
 	want = `/teams/alpha/pipelines/beta/jobs/gamma/builds/delta?vars.extra=%22param%22&vars.file=%22foo%2Fbar%22`
 	got = source.GetTargetURL()
 	if got != want {

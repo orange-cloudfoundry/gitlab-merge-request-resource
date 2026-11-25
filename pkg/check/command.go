@@ -1,10 +1,11 @@
 package check
 
 import (
-	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
-	"github.com/xanzy/go-gitlab"
 	"strings"
 	"time"
+
+	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 type Command struct {
@@ -27,12 +28,12 @@ func (command *Command) Run(request Request) (Response, error) {
 	}
 
 	options := &gitlab.ListProjectMergeRequestsOptions{
-		State:        gitlab.String("opened"),
-		OrderBy:      gitlab.String("updated_at"),
-		Sort:         gitlab.String(sort),
+		State:        gitlab.Ptr("opened"),
+		OrderBy:      gitlab.Ptr("updated_at"),
+		Sort:         gitlab.Ptr(sort),
 		Labels:       &labels,
-		TargetBranch: gitlab.String(request.Source.TargetBranch),
-		SourceBranch: gitlab.String(request.Source.SourceBranch),
+		TargetBranch: gitlab.Ptr(request.Source.TargetBranch),
+		SourceBranch: gitlab.Ptr(request.Source.SourceBranch),
 	}
 
 	requests, _, err := command.client.MergeRequests.ListProjectMergeRequests(request.Source.GetProjectPath(), options)
@@ -63,7 +64,7 @@ func (command *Command) Run(request Request) (Response, error) {
 			updatedAt = getMostRecentUpdateTime(notes, updatedAt)
 		}
 
-		if request.Source.SkipNotMergeable && mr.MergeStatus != "can_be_merged" {
+		if request.Source.SkipNotMergeable && mr.DetailedMergeStatus != "mergeable" {
 			continue
 		}
 

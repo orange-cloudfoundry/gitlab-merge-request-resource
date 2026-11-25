@@ -33,8 +33,10 @@ func (r *AgentRunnerImpl) Start() error {
 	if err != nil {
 		return err
 	}
+	if err := os.Setenv("SSH_AUTH_SOCK", r.sockPath); err != nil {
+		return err
+	}
 	r.agent = agent
-	os.Setenv("SSH_AUTH_SOCK", r.sockPath)
 	return nil
 }
 

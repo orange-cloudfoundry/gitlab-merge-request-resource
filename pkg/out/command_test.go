@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg/out"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -44,8 +44,8 @@ var _ = Describe("Out", func() {
 	})
 
 	AfterEach(func() {
-		os.Remove(destination)
 		server.Close()
+		Expect(os.RemoveAll(destination)).To(Succeed())
 	})
 
 	Describe("Only update status", func() {
@@ -72,13 +72,15 @@ var _ = Describe("Out", func() {
 			}
 
 			mux.HandleFunc("/api/v4/projects/1/statuses/abc", func(w http.ResponseWriter, r *http.Request) {
+				defer GinkgoRecover()
 				body, _ := io.ReadAll(r.Body)
 				Expect(string(body)).To(ContainSubstring(`"state":"running"`))
 				status := gitlab.CommitStatus{ID: 1, SHA: "abc"}
 				output, _ := json.Marshal(status)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusCreated)
-				w.Write(output)
+				_, err := w.Write(output)
+				Expect(err).NotTo(HaveOccurred())
 			})
 
 			response, err := command.Run(destination, request)
@@ -92,11 +94,13 @@ var _ = Describe("Out", func() {
 
 		BeforeEach(func() {
 			mux.HandleFunc("/api/v4/projects/1/merge_requests/42", func(w http.ResponseWriter, r *http.Request) {
+				defer GinkgoRecover()
 				mr := gitlab.MergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
 				output, _ := json.Marshal(mr)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write(output)
+				_, err := w.Write(output)
+				Expect(err).NotTo(HaveOccurred())
 			})
 
 			mr := gitlab.MergeRequest{ID: 1, IID: 42, SourceProjectID: 1, Labels: []string{"existing-label"}, Author: &gitlab.BasicUser{Name: "john"}}
@@ -130,11 +134,13 @@ var _ = Describe("Out", func() {
 
 		BeforeEach(func() {
 			mux.HandleFunc("/api/v4/projects/1/merge_requests/42", func(w http.ResponseWriter, r *http.Request) {
+				defer GinkgoRecover()
 				mr := gitlab.MergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
 				output, _ := json.Marshal(mr)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write(output)
+				_, err := w.Write(output)
+				Expect(err).NotTo(HaveOccurred())
 			})
 
 			mr := gitlab.MergeRequest{ID: 1, IID: 42, SourceProjectID: 1, SHA: "abc", Labels: []string{"existing-label"}, Author: &gitlab.BasicUser{Name: "john"}}
@@ -159,13 +165,15 @@ var _ = Describe("Out", func() {
 			}
 
 			mux.HandleFunc("/api/v4/projects/1/statuses/abc", func(w http.ResponseWriter, r *http.Request) {
+				defer GinkgoRecover()
 				body, _ := io.ReadAll(r.Body)
 				Expect(string(body)).To(ContainSubstring(`"state":"running"`))
 				status := gitlab.CommitStatus{ID: 1, SHA: "abc"}
 				output, _ := json.Marshal(status)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusCreated)
-				w.Write(output)
+				_, err := w.Write(output)
+				Expect(err).NotTo(HaveOccurred())
 			})
 
 			response, err := command.Run(destination, request)
@@ -179,11 +187,13 @@ var _ = Describe("Out", func() {
 
 		BeforeEach(func() {
 			mux.HandleFunc("/api/v4/projects/1/merge_requests/42", func(w http.ResponseWriter, r *http.Request) {
+				defer GinkgoRecover()
 				mr := gitlab.MergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
 				output, _ := json.Marshal(mr)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
-				w.Write(output)
+				_, err := w.Write(output)
+				Expect(err).NotTo(HaveOccurred())
 			})
 
 			mr := gitlab.MergeRequest{ID: 1, IID: 42, SourceProjectID: 1, SHA: "abc", Labels: []string{"existing-label"}, Author: &gitlab.BasicUser{Name: "john"}}
@@ -209,11 +219,13 @@ var _ = Describe("Out", func() {
 			}
 
 			mux.HandleFunc("/api/v4/projects/1/merge_requests/42/notes", func(w http.ResponseWriter, r *http.Request) {
+				defer GinkgoRecover()
 				n := gitlab.Note{ID: 1}
 				output, _ := json.Marshal(n)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusCreated)
-				w.Write(output)
+				_, err := w.Write(output)
+				Expect(err).NotTo(HaveOccurred())
 			})
 
 			response, err := command.Run(destination, request)

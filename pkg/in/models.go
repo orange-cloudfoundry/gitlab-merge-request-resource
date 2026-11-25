@@ -1,15 +1,13 @@
 package in
 
-import (
-	. "github.com/samcontesse/gitlab-merge-request-resource/pkg"
-)
+import "github.com/samcontesse/gitlab-merge-request-resource/pkg"
 
 type Request struct {
-	Source  Source  `json:"source"`
-	Version Version `json:"version"`
+	Source  pkg.Source  `json:"source"`
+	Version pkg.Version `json:"version"`
 }
 
 type Response struct {
-	Version  Version  `json:"version"`
-	Metadata Metadata `json:"metadata"`
+	Version  pkg.Version  `json:"version"`
+	Metadata pkg.Metadata `json:"metadata"`
 }

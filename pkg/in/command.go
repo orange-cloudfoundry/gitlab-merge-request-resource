@@ -3,7 +3,7 @@ package in
 import (
 	"encoding/json"
 	"github.com/samcontesse/gitlab-merge-request-resource/pkg"
-	"github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"net/url"
 	"os"
 	"strconv"
@@ -35,6 +35,10 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 	}
 
 	user, _, err := command.client.Users.CurrentUser()
+	if err != nil {
+		return Response{}, err
+	}
+
 	err = command.runner.Run("config", "--global", "user.email", user.Email)
 	if err != nil {
 		return Response{}, err
@@ -71,7 +75,7 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 		return Response{}, err
 	}
 
-	if (request.Source.SshKeys != nil) && (len(request.Source.SshKeys) != 0) {
+	if len(request.Source.SshKeys) != 0 {
 		err = command.runner.Run("config", "--global", "core.sshCommand", "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no")
 		if err != nil {
 			return Response{}, err
@@ -88,7 +92,9 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 		}
 	}
 
-	os.Chdir(destination)
+	if err := os.Chdir(destination); err != nil {
+		return Response{}, err
+	}
 
 	err = command.runner.Run("remote", "add", "source", source.String())
 	if err != nil {
