@@ -55,15 +55,17 @@ var _ = Describe("In", func() {
 			mux.HandleFunc("/api/v4/projects/namespace%2Fproject/merge_requests/1", func(w http.ResponseWriter, r *http.Request) {
 				defer GinkgoRecover()
 				mr := gitlab.MergeRequest{
-					IID:             88,
-					ID:              99,
-					SHA:             "abc",
-					ProjectID:       42,
-					TargetProjectID: 42,
-					SourceProjectID: 42,
-					SourceBranch:    "source-branch",
-					TargetBranch:    "target-branch",
-					Author:          &gitlab.BasicUser{Name: "Tester"},
+					BasicMergeRequest: gitlab.BasicMergeRequest{
+						IID:             88,
+						ID:              99,
+						SHA:             "abc",
+						ProjectID:       42,
+						TargetProjectID: 42,
+						SourceProjectID: 42,
+						SourceBranch:    "source-branch",
+						TargetBranch:    "target-branch",
+						Author:          &gitlab.BasicUser{Name: "Tester"},
+					},
 				}
 				output, _ := json.Marshal(mr)
 				w.Header().Set("content-type", "application/json")

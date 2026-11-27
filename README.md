@@ -24,7 +24,7 @@ resources:
 * `uri`: (required) The location of the repository (required)
 * `private_token`: (required) Your GitLab user's private token (required, can be found in your profile settings)
 * `insecure`: When set to `true`, SSL verification is turned off 
-* `skip_work_in_progress`: When set to `true`, merge requests mark as work in progress (WIP) will be skipped. Default `false`
+* `skip_work_in_progress`: When set to `true`, merge requests marked as drafts (formerly WIP) will be skipped using GitLab's `draft` field. Default `false`
 * `skip_not_mergeable`: When set to `true`, only merge requests with a GitLab `detailed_merge_status` of `mergeable` are included; other statuses, including pending checks, are skipped. Default `false`
 * `skip_trigger_comment`: When set to `true`, the resource will not look up for `[trigger ci]` merge request comments to manually trigger builds. Default `false`  
 * `concourse_url`: When set, this url will be used to override `ATC_EXTERNAL_URL` during commit status updates.

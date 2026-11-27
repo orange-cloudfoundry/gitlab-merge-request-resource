@@ -134,7 +134,7 @@ func (command *Command) Run(destination string, request Request) (Response, erro
 	return response, nil
 }
 
-func (command *Command) createRepositoryUrl(pid int, token string) (*url.URL, error) {
+func (command *Command) createRepositoryUrl(pid int64, token string) (*url.URL, error) {
 	project, _, err := command.client.Projects.GetProject(pid, &gitlab.GetProjectOptions{})
 	if err != nil {
 		return nil, err
@@ -154,11 +154,11 @@ func buildMetadata(mr *gitlab.MergeRequest, commit *gitlab.Commit) pkg.Metadata 
 	return []pkg.MetadataField{
 		{
 			Name:  "id",
-			Value: strconv.Itoa(mr.ID),
+			Value: strconv.FormatInt(mr.ID, 10),
 		},
 		{
 			Name:  "iid",
-			Value: strconv.Itoa(mr.IID),
+			Value: strconv.FormatInt(mr.IID, 10),
 		},
 		{
 			Name:  "sha",

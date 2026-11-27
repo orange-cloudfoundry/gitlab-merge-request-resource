@@ -131,11 +131,11 @@ func buildMetadata(mr *gitlab.MergeRequest) pkg.Metadata {
 	return []pkg.MetadataField{
 		{
 			Name:  "id",
-			Value: strconv.Itoa(mr.ID),
+			Value: strconv.FormatInt(mr.ID, 10),
 		},
 		{
 			Name:  "iid",
-			Value: strconv.Itoa(mr.IID),
+			Value: strconv.FormatInt(mr.IID, 10),
 		},
 		{
 			Name:  "sha",

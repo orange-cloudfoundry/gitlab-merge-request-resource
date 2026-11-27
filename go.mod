@@ -1,11 +1,11 @@
 module github.com/samcontesse/gitlab-merge-request-resource
 
-go 1.26.0
+go 1.27.4
 
 require (
 	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
-	gitlab.com/gitlab-org/api/client-go v0.116.0
+	gitlab.com/gitlab-org/api/client-go v1.46.0
 )
 
 require (
@@ -26,5 +26,4 @@ require (
 	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/time v0.16.0 // indirect
 	golang.org/x/tools v0.53.0 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
 )
