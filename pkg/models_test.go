@@ -1,6 +1,35 @@
 package pkg
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
+
+func TestVersionJSON(t *testing.T) {
+	for _, id := range []int64{88, 9223372036854775807} {
+		version := Version{ID: id}
+		data, err := json.Marshal(version)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var wire struct {
+			ID string `json:"id"`
+		}
+		if err := json.Unmarshal(data, &wire); err != nil {
+			t.Fatalf("version ID must remain a JSON string: %v", err)
+		}
+		if wire.ID == "" {
+			t.Fatal("version ID is missing")
+		}
+		var decoded Version
+		if err := json.Unmarshal(data, &decoded); err != nil {
+			t.Fatal(err)
+		}
+		if decoded.ID != id {
+			t.Fatalf("version ID changed: got %d, want %d", decoded.ID, id)
+		}
+	}
+}
 
 func TestSource_GetProjectPath(t *testing.T) {
 	tests := []struct {

@@ -22,11 +22,13 @@ var _ = Describe("Check", func() {
 		command             *check.Command
 		root                *url.URL
 		detailedMergeStatus string
+		draft               bool
 	)
 
 	BeforeEach(func() {
 		t, _ = time.Parse(time.RFC3339, "2022-01-01T08:00:00Z")
 		detailedMergeStatus = "mergeable"
+		draft = false
 		mux = http.NewServeMux()
 		server := httptest.NewServer(mux)
 		root, _ = url.Parse(server.URL)
@@ -54,8 +56,8 @@ var _ = Describe("Check", func() {
 					Expect(r.URL.EscapedPath()).To(Equal("/api/v4/projects/namespace%2Fproject/merge_requests"))
 					Expect(r.Header.Get("Private-Token")).To(Equal("$"))
 					Expect(r.URL.Query().Get("state")).To(Equal("opened"))
-					mr := gitlab.MergeRequest{IID: 88, ID: 99, SHA: "abc", ProjectID: 42, DetailedMergeStatus: detailedMergeStatus}
-					output, _ := json.Marshal([]gitlab.MergeRequest{mr})
+					mr := gitlab.BasicMergeRequest{IID: 88, ID: 99, SHA: "abc", ProjectID: 42, DetailedMergeStatus: detailedMergeStatus, Draft: draft}
+					output, _ := json.Marshal([]gitlab.BasicMergeRequest{mr})
 					w.Header().Set("content-type", "application/json")
 					w.WriteHeader(http.StatusOK)
 					_, err := w.Write(output)
@@ -88,7 +90,7 @@ var _ = Describe("Check", func() {
 				response, err := command.Run(request)
 				Expect(err).Should(BeNil())
 				Expect(len(response)).To(Equal(1))
-				Expect(response[0].ID).To(Equal(88))
+				Expect(response[0].ID).To(Equal(int64(88)))
 				Expect(response[0].UpdatedAt).To(Equal(&t))
 			})
 
@@ -121,6 +123,61 @@ var _ = Describe("Check", func() {
 				response, err = command.Run(request)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(response).To(HaveLen(1))
+			})
+
+			It("skips drafts only when requested", func() {
+				draft = true
+				request := check.Request{
+					Source: pkg.Source{
+						URI:                root.String() + "/namespace/project.git",
+						SkipWorkInProgress: true,
+					},
+				}
+
+				response, err := command.Run(request)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(response).To(BeEmpty())
+
+				request.Source.SkipWorkInProgress = false
+				response, err = command.Run(request)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(response).To(HaveLen(1))
+
+				draft = false
+				request.Source.SkipWorkInProgress = true
+				response, err = command.Run(request)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(response).To(HaveLen(1))
+			})
+
+			It("filters paths using merge request diff versions", func() {
+				mux.HandleFunc("/api/v4/projects/42/merge_requests/88/versions", func(w http.ResponseWriter, r *http.Request) {
+					defer GinkgoRecover()
+					Expect(json.NewEncoder(w).Encode([]gitlab.MergeRequestDiffVersion{{ID: 7}})).To(Succeed())
+				})
+				mux.HandleFunc("/api/v4/projects/42/merge_requests/88/versions/7", func(w http.ResponseWriter, r *http.Request) {
+					defer GinkgoRecover()
+					version := gitlab.MergeRequestDiffVersion{
+						ID:    7,
+						Diffs: []*gitlab.Diff{{OldPath: "src/main.go", NewPath: "src/main.go"}},
+					}
+					Expect(json.NewEncoder(w).Encode(version)).To(Succeed())
+				})
+				request := check.Request{
+					Source: pkg.Source{
+						URI:   root.String() + "/namespace/project.git",
+						Paths: []string{"src/*"},
+					},
+				}
+
+				response, err := command.Run(request)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(response).To(HaveLen(1))
+
+				request.Source.Paths = []string{"docs/*"}
+				response, err = command.Run(request)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(response).To(BeEmpty())
 			})
 
 		})

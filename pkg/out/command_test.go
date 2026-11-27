@@ -51,7 +51,7 @@ var _ = Describe("Out", func() {
 	Describe("Only update status", func() {
 
 		BeforeEach(func() {
-			mr := gitlab.MergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
+			mr := gitlab.BasicMergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
 			content, _ := json.Marshal(mr)
 
 			_ = os.Mkdir(path.Join(destination, "repo"), 0755)
@@ -85,7 +85,7 @@ var _ = Describe("Out", func() {
 
 			response, err := command.Run(destination, request)
 			Expect(err).Should(BeNil())
-			Expect(response.Version.ID).To(Equal(42))
+			Expect(response.Version.ID).To(Equal(int64(42)))
 		})
 
 	})
@@ -95,7 +95,7 @@ var _ = Describe("Out", func() {
 		BeforeEach(func() {
 			mux.HandleFunc("/api/v4/projects/1/merge_requests/42", func(w http.ResponseWriter, r *http.Request) {
 				defer GinkgoRecover()
-				mr := gitlab.MergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
+				mr := gitlab.BasicMergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
 				output, _ := json.Marshal(mr)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -103,7 +103,7 @@ var _ = Describe("Out", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 
-			mr := gitlab.MergeRequest{ID: 1, IID: 42, SourceProjectID: 1, Labels: []string{"existing-label"}, Author: &gitlab.BasicUser{Name: "john"}}
+			mr := gitlab.BasicMergeRequest{ID: 1, IID: 42, SourceProjectID: 1, Labels: []string{"existing-label"}, Author: &gitlab.BasicUser{Name: "john"}}
 			content, _ := json.Marshal(mr)
 
 			_ = os.Mkdir(path.Join(destination, "repo"), 0755)
@@ -125,7 +125,7 @@ var _ = Describe("Out", func() {
 
 			response, err := command.Run(destination, request)
 			Expect(err).Should(BeNil())
-			Expect(response.Version.ID).To(Equal(42))
+			Expect(response.Version.ID).To(Equal(int64(42)))
 		})
 
 	})
@@ -135,7 +135,7 @@ var _ = Describe("Out", func() {
 		BeforeEach(func() {
 			mux.HandleFunc("/api/v4/projects/1/merge_requests/42", func(w http.ResponseWriter, r *http.Request) {
 				defer GinkgoRecover()
-				mr := gitlab.MergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
+				mr := gitlab.BasicMergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
 				output, _ := json.Marshal(mr)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -143,7 +143,7 @@ var _ = Describe("Out", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 
-			mr := gitlab.MergeRequest{ID: 1, IID: 42, SourceProjectID: 1, SHA: "abc", Labels: []string{"existing-label"}, Author: &gitlab.BasicUser{Name: "john"}}
+			mr := gitlab.BasicMergeRequest{ID: 1, IID: 42, SourceProjectID: 1, SHA: "abc", Labels: []string{"existing-label"}, Author: &gitlab.BasicUser{Name: "john"}}
 			content, _ := json.Marshal(mr)
 
 			_ = os.Mkdir(path.Join(destination, "repo"), 0755)
@@ -178,7 +178,7 @@ var _ = Describe("Out", func() {
 
 			response, err := command.Run(destination, request)
 			Expect(err).Should(BeNil())
-			Expect(response.Version.ID).To(Equal(42))
+			Expect(response.Version.ID).To(Equal(int64(42)))
 		})
 
 	})
@@ -188,7 +188,7 @@ var _ = Describe("Out", func() {
 		BeforeEach(func() {
 			mux.HandleFunc("/api/v4/projects/1/merge_requests/42", func(w http.ResponseWriter, r *http.Request) {
 				defer GinkgoRecover()
-				mr := gitlab.MergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
+				mr := gitlab.BasicMergeRequest{ID: 1, IID: 42, SHA: "abc", SourceProjectID: 1, Author: &gitlab.BasicUser{Name: "john"}}
 				output, _ := json.Marshal(mr)
 				w.Header().Set("content-type", "application/json")
 				w.WriteHeader(http.StatusOK)
@@ -196,7 +196,7 @@ var _ = Describe("Out", func() {
 				Expect(err).NotTo(HaveOccurred())
 			})
 
-			mr := gitlab.MergeRequest{ID: 1, IID: 42, SourceProjectID: 1, SHA: "abc", Labels: []string{"existing-label"}, Author: &gitlab.BasicUser{Name: "john"}}
+			mr := gitlab.BasicMergeRequest{ID: 1, IID: 42, SourceProjectID: 1, SHA: "abc", Labels: []string{"existing-label"}, Author: &gitlab.BasicUser{Name: "john"}}
 			content, _ := json.Marshal(mr)
 
 			_ = os.Mkdir(path.Join(destination, "repo"), 0755)
@@ -230,7 +230,7 @@ var _ = Describe("Out", func() {
 
 			response, err := command.Run(destination, request)
 			Expect(err).Should(BeNil())
-			Expect(response.Version.ID).To(Equal(42))
+			Expect(response.Version.ID).To(Equal(int64(42)))
 		})
 
 	})

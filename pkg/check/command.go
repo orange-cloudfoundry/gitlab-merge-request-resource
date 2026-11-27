@@ -68,7 +68,7 @@ func (command *Command) Run(request Request) (Response, error) {
 			continue
 		}
 
-		if request.Source.SkipWorkInProgress && mr.WorkInProgress {
+		if request.Source.SkipWorkInProgress && mr.Draft {
 			continue
 		}
 
@@ -103,7 +103,7 @@ func (command *Command) Run(request Request) (Response, error) {
 	return versions, nil
 }
 
-func matchPathPatterns(api *gitlab.Client, mr *gitlab.MergeRequest, source pkg.Source) (bool, error) {
+func matchPathPatterns(api *gitlab.Client, mr *gitlab.BasicMergeRequest, source pkg.Source) (bool, error) {
 
 	if len(source.Paths) == 0 && len(source.IgnorePaths) == 0 {
 		return true, nil
